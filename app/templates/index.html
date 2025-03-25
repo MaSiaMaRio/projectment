@@ -5,6 +5,15 @@
     <meta charset="utf-8" />
     <style>
         #map { height: 90vh; width: 100%; }
+.marker-icon {
+    background-color: #2563eb;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    transition: transform 0.2s;
+  }
         .comment-box { margin-top: 10px; }
         .comment-input { width: 100%; padding: 4px; }
         .comment-list { margin-top: 5px; font-size: 0.9em; color: #333; max-height: 150px; overflow-y: auto; }
@@ -23,7 +32,7 @@
 
         fetch('/get_points').then(res => res.json()).then(data => {
             data.forEach(p => {
-                const marker = L.marker([p[1], p[2]]).addTo(map);
+                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon' }) }).addTo(map);
                 marker.bindTooltip(p[3], { permanent: true, direction: 'top' });
 
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
@@ -51,7 +60,17 @@
             fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
         }
 
-        map.on('click', function(e) {
+        
+map.on("zoom", () => {
+  const zoom = map.getZoom();
+  const scale = 0.8 + (zoom - 13) * 0.2;
+  document.querySelectorAll(".marker-icon").forEach(el => {
+    el.style.transform = `scale(${scale})`;
+  });
+});
+
+
+    map.on('click', function(e) {
             const comment = prompt('Комментарий к точке:');
             if (!comment) return;
             const lat = e.latlng.lat;
@@ -75,3 +94,4 @@
     </script>
 </body>
 </html>
+
