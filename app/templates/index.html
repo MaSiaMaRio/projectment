@@ -32,7 +32,7 @@
 
         fetch('/get_points').then(res => res.json()).then(data => {
             data.forEach(p => {
-                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon' }) }).addTo(map);
+                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', conSize: [30, 30] }) }).addTo(map);
                 marker.bindTooltip(p[3], { permanent: true, direction: 'top' });
 
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
