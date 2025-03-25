@@ -32,11 +32,7 @@
                 popupContent += `
                     <button onclick="like(${p[0]})">👍</button>
                     <button onclick="dislike(${p[0]})">👎</button>
-                    <div class="comment-box">
-                        <input class="comment-input" id="comment_input_${p[0]}" placeholder="Добавить комментарий..." />
-                        <button onclick="addComment(${p[0]})">💬 Отправить</button>
-                        <div class="comment-list" id="comments_${p[0]}">Загрузка комментариев...</div>
-                    </div>
+                    
                 `;
 
                 marker.bindPopup(popupContent);
