@@ -1,102 +1,110 @@
-
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Карта Нальчика</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    #map { height: 100vh; width: 100vw; }
-    .leaflet-popup-content-wrapper { border-radius: 1rem; }
-    .leaflet-popup-content { margin: 0.5rem; }
-  </style>
+    <title>Карта Нальчика</title>
+    <meta charset="utf-8" />
+    <style>
+        #map { height: 90vh; width: 100%; }
+        .comment-box { margin-top: 10px; }
+        .comment-input { width: 100%; padding: 4px; }
+        .comment-list { margin-top: 5px; font-size: 0.9em; color: #333; max-height: 150px; overflow-y: auto; }
+        .comment-item { border-top: 1px solid #ccc; padding: 3px 0; }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <div id="map"></div>
+<body>
+    <h1>Карта Нальчика</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([43.4847, 43.6071], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-2xl p-4 w-11/12 max-w-md shadow-lg">
-      <h2 class="text-xl font-semibold mb-2">Добавить точку</h2>
-      <input id="modalComment" type="text" placeholder="Комментарий" class="w-full border rounded px-3 py-2 mb-2" />
-      <input id="modalPhoto" type="file" accept="image/*" class="w-full mb-2" />
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Отмена</button>
-        <button onclick="submitPoint()" class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Добавить</button>
-      </div>
-    </div>
-  </div>
+        fetch('/get_points').then(res => res.json()).then(data => {
+            data.forEach(p => {
+                const marker = L.marker([p[1], p[2]]).addTo(map);
+                marker.bindTooltip(p[3], { permanent: true, direction: 'top' });
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    let selectedCoords = null;
+                let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
+                if (p[4]) popupContent += `<img src="${p[4]}" width="100" /><br/>`;
 
-    const map = L.map('map').setView([43.4847, 43.6071], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+                popupContent += `
+                    <button onclick="like(${p[0]})">👍</button>
+                    <button onclick="dislike(${p[0]})">👎</button>
+                    <div class="comment-box">
+                        <input class="comment-input" id="comment_input_${p[0]}" placeholder="Добавить комментарий..." />
+                        <button onclick="addComment(${p[0]})">💬 Отправить</button>
+                        <div class="comment-list" id="comments_${p[0]}">Загрузка комментариев...</div>
+                    </div>
+                `;
 
-    fetch('/get_points').then(res => res.json()).then(data => {
-      data.forEach(p => {
-        const marker = L.marker([p[1], p[2]]).addTo(map);
-        marker.bindTooltip(p[3], { permanent: true, direction: 'top' });
+                marker.bindPopup(popupContent);
 
-        let popupContent = `
-          <div class="text-sm">
-            <p class="font-semibold mb-1">${p[3]}</p>
-            ${p[4] ? `<img src="${p[4]}" class="rounded mb-2" width="150" />` : ""}
-            <div class="flex gap-2">
-              <button onclick="like(${p[0]})" class="px-3 py-1 rounded bg-green-100 hover:bg-green-200">👍 ${p[5]}</button>
-              <button onclick="dislike(${p[0]})" class="px-3 py-1 rounded bg-red-100 hover:bg-red-200">👎 ${p[6]}</button>
-            </div>
-          </div>
-        `;
-        marker.bindPopup(popupContent);
-      });
-    });
+                marker.on('popupopen', () => {
+                    loadComments(p[0]);
+                });
+            });
+        });
 
-    function like(id) {
-      fetch('/like_point/' + id, { method: 'POST' }).then(() => location.reload());
-    }
+        function like(id) {
+            fetch('/like_point/' + id, { method: 'POST' }).then(() => location.reload());
+        }
 
-    function dislike(id) {
-      fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
-    }
+        function dislike(id) {
+            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
+        }
 
-    function openModal(coords) {
-      selectedCoords = coords;
-      document.getElementById('modal').classList.remove('hidden');
-    }
+        function addComment(point_id) {
+            const input = document.getElementById('comment_input_' + point_id);
+            const text = input.value.trim();
+            if (!text) return;
+            const formData = new FormData();
+            formData.append('point_id', point_id);
+            formData.append('text', text);
+            fetch('/add_comment', { method: 'POST', body: formData })
+                .then(() => {
+                    input.value = '';
+                    loadComments(point_id);
+                });
+        }
 
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-      selectedCoords = null;
-    }
+        function loadComments(point_id) {
+            fetch('/get_comments/' + point_id).then(res => res.json()).then(data => {
+                const container = document.getElementById('comments_' + point_id);
+                if (!data.length) {
+                    container.innerHTML = '<i>Комментариев пока нет</i>';
+                } else {
+                    container.innerHTML = data.map(c => 
+                        '<div class="comment-item">' + c[0] + 
+                        ' <span style="float:right;font-size:0.8em;color:#888;">' + new Date(c[1]).toLocaleString() + '</span></div>'
+                    ).join('');
+                }
+            });
+        }
 
-    function submitPoint() {
-      const comment = document.getElementById('modalComment').value;
-      const photo = document.getElementById('modalPhoto').files[0];
-      if (!comment || !selectedCoords) return;
-
-      const formData = new FormData();
-      formData.append('lat', selectedCoords.lat);
-      formData.append('lon', selectedCoords.lng);
-      formData.append('comment', comment);
-      if (photo) formData.append('image', photo);
-
-      fetch('/add_point', {
-        method: 'POST',
-        body: formData
-      }).then(() => {
-        closeModal();
-        location.reload();
-      });
-    }
-
-    map.on('click', function(e) {
-      openModal(e.latlng);
-    });
-  </script>
+        map.on('click', function(e) {
+            const comment = prompt('Комментарий к точке:');
+            if (!comment) return;
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            const formData = new FormData();
+            formData.append('lat', lat);
+            formData.append('lon', lon);
+            formData.append('comment', comment);
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = () => {
+                if (fileInput.files[0]) {
+                    formData.append('image', fileInput.files[0]);
+                }
+                fetch('/add_point', { method: 'POST', body: formData })
+                    .then(() => location.reload());
+            };
+            fileInput.click();
+        });
+    </script>
 </body>
 </html>
