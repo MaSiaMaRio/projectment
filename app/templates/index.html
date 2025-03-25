@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+  const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+</script>
+
     <title>Карта Нальчика</title>
     <meta charset="utf-8" />
     <style>
@@ -73,7 +81,7 @@
 
         fetch('/get_points').then(res => res.json()).then(data => {
             data.forEach(p => {
-                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', conSize: [100, 100] }) }).addTo(map);
+                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', iconSize: [100, 100] }) }).addTo(map);
                 marker.bindTooltip(p[3], {
   permanent: true,
   direction: 'top',
@@ -111,13 +119,11 @@
         });
 
         function like(id) {
-            fetch('/like_point/' + id, { method: 'POST' }).then(() => window.location.href = window.location.href);
-
+            fetch(`/like_point/${id}?user_id=${tgUser?.id}`, { method: 'POST' }).then(() => window.location.href = window.location.href);
         }
 
         function dislike(id) {
-            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => window.location.href = window.location.href);
-
+            fetch(`/dislike_point/${id}?user_id=${tgUser?.id}`, { method: 'POST' }).then(() => window.location.href = window.location.href);
         }
 
         
@@ -154,4 +160,3 @@ map.on("zoom", () => {
     </script>
 </body>
 </html>
-
