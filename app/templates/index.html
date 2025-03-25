@@ -111,11 +111,13 @@
         });
 
         function like(id) {
-            fetch('/like_point/' + id, { method: 'POST' }).then(() => location.reload());
+            fetch('/like_point/' + id, { method: 'POST' }).then(() => window.location.href = window.location.href);
+
         }
 
         function dislike(id) {
-            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
+            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => window.location.href = window.location.href);
+
         }
 
         
