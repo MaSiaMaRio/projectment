@@ -76,12 +76,12 @@
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
                 if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
 
-                popupContent += `
+                popupContent += 
   <div class="flex gap-3 justify-center mt-2">
     <button onclick="like(${p[0]})" class="px-4 py-2 text-lg rounded-xl bg-green-100 hover:bg-green-200">👍</button>
     <button onclick="dislike(${p[0]})" class="px-4 py-2 text-lg rounded-xl bg-red-100 hover:bg-red-200">👎</button>
   </div>
-`;
+;
 s
 
                 marker.bindPopup(popupContent);
