@@ -55,34 +55,6 @@
             fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
         }
 
-        function addComment(point_id) {
-            const input = document.getElementById('comment_input_' + point_id);
-            const text = input.value.trim();
-            if (!text) return;
-            const formData = new FormData();
-            formData.append('point_id', point_id);
-            formData.append('text', text);
-            fetch('/add_comment', { method: 'POST', body: formData })
-                .then(() => {
-                    input.value = '';
-                    loadComments(point_id);
-                });
-        }
-
-        function loadComments(point_id) {
-            fetch('/get_comments/' + point_id).then(res => res.json()).then(data => {
-                const container = document.getElementById('comments_' + point_id);
-                if (!data.length) {
-                    container.innerHTML = '<i>Комментариев пока нет</i>';
-                } else {
-                    container.innerHTML = data.map(c => 
-                        '<div class="comment-item">' + c[0] + 
-                        ' <span style="float:right;font-size:0.8em;color:#888;">' + new Date(c[1]).toLocaleString() + '</span></div>'
-                    ).join('');
-                }
-            });
-        }
-
         map.on('click', function(e) {
             const comment = prompt('Комментарий к точке:');
             if (!comment) return;
