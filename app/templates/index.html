@@ -38,6 +38,14 @@
 .leaflet-popup-tip {
   display: none; /* если не хочешь стрелочку вниз */
 }
+.leaflet-popup-close-button {
+  font-size: 24px !important;  /* Увеличивает сам "×" */
+  top: 6px;                    /* Можно подвинуть вверх/вниз */
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
 
         .comment-box { margin-top: 100px; }
         .comment-input { width: 100%; padding: 40px; }
@@ -66,7 +74,7 @@
 
 
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
-                if (p[4]) popupContent += `<img src="${p[4]}" width="100" /><br/>`;
+                if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
 
                 popupContent += `
                     <button onclick="like(${p[0]})">👍</button>
