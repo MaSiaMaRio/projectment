@@ -14,7 +14,7 @@
     box-shadow: 0 0 4px rgba(0,0,0,0.4);
     transition: transform 0.2s;
   }
-        .comment-box { margin-top: 10px; }
+        .comment-box { margin-top: 100px; }
         .comment-input { width: 100%; padding: 4px; }
         .comment-list { margin-top: 5px; font-size: 0.9em; color: #333; max-height: 150px; overflow-y: auto; }
         .comment-item { border-top: 1px solid #ccc; padding: 3px 0; }
@@ -63,7 +63,7 @@
         
 map.on("zoom", () => {
   const zoom = map.getZoom();
-  const scale = 0.8 + (zoom - 13) * 0.2;
+  const scale = 0.8 + (zoom - 13) * 0.8;
   document.querySelectorAll(".marker-icon").forEach(el => {
     el.style.transform = `scale(${scale})`;
   });
