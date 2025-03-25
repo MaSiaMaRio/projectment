@@ -1,3 +1,4 @@
 flask
 werkzeug
-aiogram
+aiogram~=3.4.1
+
