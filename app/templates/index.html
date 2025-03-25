@@ -27,7 +27,7 @@
   padding: 16px;
   border-radius: 1rem;
   font-size: 16px;
-  max-width: 300px; /* можно сделать 350 или 400, если надо */
+  max-width: 400px; /* можно сделать 350 или 400, если надо */
 }
 
 .leaflet-popup-content {
@@ -58,7 +58,12 @@
         fetch('/get_points').then(res => res.json()).then(data => {
             data.forEach(p => {
                 const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', conSize: [100, 100] }) }).addTo(map);
-                marker.bindTooltip(p[3], { permanent: true, direction: 'top' });
+                marker.bindTooltip(p[3], {
+  permanent: true,
+  direction: 'top',
+  className: `custom-tooltip-${p[0]}`
+});
+
 
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
                 if (p[4]) popupContent += `<img src="${p[4]}" width="100" /><br/>`;
@@ -70,6 +75,15 @@
                 `;
 
                 marker.bindPopup(popupContent);
+                setTimeout(() => {
+  const el = document.querySelector(`.custom-tooltip-${p[0]}`);
+  if (el) {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", () => {
+      marker.openPopup();
+    });
+  }
+}, 0);
 
                 marker.on('popupopen', () => {
                     loadComments(p[0]);
