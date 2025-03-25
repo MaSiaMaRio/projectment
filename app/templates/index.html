@@ -85,11 +85,12 @@
                 if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
 
                popupContent += `
-               
-                    <button onclick="like(${p[0]})">👍</button>
-                    <button onclick="dislike(${p[0]})">👎</button>
-                    
-                `;
+  <div style="text-align:center; margin-top:10px;">
+    <button onclick="like(${p[0]})" class="popup-btn">👍</button>
+    <button onclick="dislike(${p[0]})" class="popup-btn">👎</button>
+  </div>
+`;
+
 
 
                 marker.bindPopup(popupContent);
