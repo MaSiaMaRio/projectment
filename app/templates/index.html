@@ -1,122 +1,155 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Карта</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    #map { height: 100vh; width: 100vw; }
-    .marker-icon {
-      background-color: #2563eb;
-      border-radius: 50%;
-      width: 100%;
-      height: 100%;
-      border: 2px solid white;
-      box-shadow: 0 0 4px rgba(0,0,0,0.4);
-      transition: transform 0.2s;
-    }
-    .leaflet-popup-content-wrapper {
-      padding: 16px;
-      border-radius: 1rem;
-      font-size: 16px;
-      max-width: 300px;
-    }
-    .leaflet-popup-content {
-      margin: 0;
-      line-height: 1.5;
-      text-align: center;
-    }
-    .leaflet-popup-close-button {
-      font-size: 24px !important;
-      top: 6px;
-      right: 6px;
-      width: 30px;
-      height: 30px;
-      line-height: 30px;
-    }
-  </style>
+    <title>Карта Нальчика</title>
+    <meta charset="utf-8" />
+    <style>
+        #map { height: 90vh; width: 100%; }
+.marker-icon {
+    background-color: #2563eb;
+    border-radius: 50%;
+    width: 60%; 
+    height: 60%;
+    border: 10px solid white;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    transition: transform 0.2s;
+  }
+        .leaflet-tooltip {
+  font-size: 30px;        /* размер текста */
+  padding: 5px 5px;      /* внутренние отступы */
+  background-color: #fff; /* цвет фона */
+  border-radius: 30px;     /* скругление углов */
+  border: 3px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  font-weight: 500;
+}
+ .leaflet-popup-content-wrapper {
+  padding: 40px;
+  border-radius: 1rem;
+  font-size: 30px;
+  max-width: 400px; /* можно сделать 350 или 400, если надо */
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.leaflet-popup-tip {
+  display: none; /* если не хочешь стрелочку вниз */
+}
+.leaflet-popup-close-button {
+  font-size: 45px !important;  /* Увеличивает сам "×" */
+  top: 6px;                    /* Можно подвинуть вверх/вниз */
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
+.popup-btn {
+  padding: 20px 30px;
+  font-size: 20px;
+  border-radius: 10px;
+  margin: 0 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+}
+
+        .comment-box { margin-top: 100px; }
+        .comment-input { width: 100%; padding: 40px; }
+        .comment-list { margin-top: 50px; font-size: 0.9em; color: #333; max-height: 150px; overflow-y: auto; }
+        .comment-item { border-top: 10px solid #ccc; padding: 30px 0; }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-  <div id="map"></div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    const tgUser = tg.initDataUnsafe?.user;
-
-    const map = L.map('map').setView([43.4847, 43.6071], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    fetch('/get_points').then(res => res.json()).then(data => {
-      data.forEach(p => {
-        const marker = L.marker([p[1], p[2]], {
-          icon: L.divIcon({
-            className: 'marker-icon',
-            iconSize: [24, 24]
-          })
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([43.4847, 43.6071], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        const popupContent = `
-          <div class="flex flex-col items-center gap-3">
-            <div class="text-sm text-gray-600">Оцените точку</div>
-            <div class="flex gap-4">
-              <button onclick="like(${p[0]})" style="padding: 10px 16px; font-size: 18px; border-radius: 10px; background-color: #d1fae5;">👍 ${p[5]}</button>
-              <button onclick="dislike(${p[0]})" style="padding: 10px 16px; font-size: 18px; border-radius: 10px; background-color: #fee2e2;">👎 ${p[6]}</button>
-            </div>
-          </div>
-        `;
-        marker.bindPopup(popupContent);
+        fetch('/get_points').then(res => res.json()).then(data => {
+            data.forEach(p => {
+                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', conSize: [100, 100] }) }).addTo(map);
+                marker.bindTooltip(p[3], {
+  permanent: true,
+  direction: 'top',
+  className: `custom-tooltip-${p[0]}`
+});
 
-        marker.bindTooltip("", {
-          permanent: true,
-          direction: 'top',
-          className: `custom-tooltip-${p[0]}`
-        });
 
-        setTimeout(() => {
-          const el = document.querySelector(`.custom-tooltip-${p[0]}`);
-          if (el) {
-            el.style.cursor = "pointer";
-            el.addEventListener("click", () => {
-              marker.openPopup();
+                let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
+                if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
+
+               popupContent += `
+  <div style="text-align:center; margin-top:10px;">
+    <button onclick="like(${p[0]})" class="popup-btn">👍</button>
+    <button onclick="dislike(${p[0]})" class="popup-btn">👎</button>
+  </div>
+`;
+
+
+
+                marker.bindPopup(popupContent);
+                setTimeout(() => {
+  const el = document.querySelector(`.custom-tooltip-${p[0]}`);
+  if (el) {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", () => {
+      marker.openPopup();
+    });
+  }
+}, 0);
+
+                marker.on('popupopen', () => {
+                    loadComments(p[0]);
+                });
             });
-          }
-        }, 0);
-      });
-    });
-
-    function like(id) {
-      fetch(`/like_point/${id}?user_id=${tgUser?.id}`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "liked") window.location.href = window.location.href;
-          else alert("Вы уже голосовали");
         });
-    }
 
-    function dislike(id) {
-      fetch(`/dislike_point/${id}?user_id=${tgUser?.id}`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "disliked") window.location.href = window.location.href;
-          else alert("Вы уже голосовали");
+        function like(id) {
+            fetch('/like_point/' + id, { method: 'POST' }).then(() => location.reload());
+        }
+
+        function dislike(id) {
+            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
+        }
+
+        
+map.on("zoom", () => {
+  const zoom = map.getZoom();
+  const scale = 0.8 + (zoom - 13) * 0.8;
+  document.querySelectorAll(".marker-icon").forEach(el => {
+    el.style.transform = `scale(${scale})`;
+  });
+});
+
+
+    map.on('click', function(e) {
+            const comment = prompt('Комментарий к точке:');
+            if (!comment) return;
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            const formData = new FormData();
+            formData.append('lat', lat);
+            formData.append('lon', lon);
+            formData.append('comment', comment);
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = () => {
+                if (fileInput.files[0]) {
+                    formData.append('image', fileInput.files[0]);
+                }
+                fetch('/add_point', { method: 'POST', body: formData })
+                    .then(() => location.reload());
+            };
+            fileInput.click();
         });
-    }
-
-    map.on("zoom", () => {
-      const zoom = map.getZoom();
-      const scale = 0.8 + (zoom - 13) * 0.2;
-      document.querySelectorAll(".marker-icon").forEach(el => {
-        el.style.transform = `scale(${scale})`;
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>
+
