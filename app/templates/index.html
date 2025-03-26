@@ -101,6 +101,7 @@
 
                 let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
                 if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
+popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Добавлено: ${new Date(p[7]).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>`;
                 popupContent += `
                     <div style="text-align:center; margin-top:10px;">
                         <button onclick="like(${p[0]})" class="popup-btn">👍</button>
