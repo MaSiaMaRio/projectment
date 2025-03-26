@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +23,8 @@ def init_db():
             comment TEXT,
             image TEXT,
             likes INTEGER DEFAULT 0,
-            dislikes INTEGER DEFAULT 0
+            dislikes INTEGER DEFAULT 0,
+            created_at TEXT
         )
     ''')
     conn.commit()
@@ -44,10 +46,11 @@ def add_point():
         saved_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image_file.save(saved_path)
         image_path = f'/static/uploads/{filename}'
+    created_at = datetime.now().isoformat()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("INSERT INTO points (lat, lon, comment, image) VALUES (?, ?, ?, ?)",
-              (lat, lon, comment, image_path))
+    c.execute("INSERT INTO points (lat, lon, comment, image, created_at) VALUES (?, ?, ?, ?, ?)",
+              (lat, lon, comment, image_path, created_at))
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
