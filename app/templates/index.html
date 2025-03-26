@@ -54,6 +54,23 @@
   background-color: #f3f4f6;
   cursor: pointer;
 }
+.outer-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 4px rgba(0,0,0,0.4);
+}
+
+.inner-circle {
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background-color: #2563eb;
+}
 
         .comment-box { margin-top: 100px; }
         .comment-input { width: 100%; padding: 40px; }
@@ -73,7 +90,14 @@
 
         fetch('/get_points').then(res => res.json()).then(data => {
             data.forEach(p => {
-                const marker = L.marker([p[1], p[2]], { icon: L.divIcon({ className: 'marker-icon', conSize: [100, 100] }) }).addTo(map);
+                const marker = L.marker([p[1], p[2]], {
+  icon: L.divIcon({
+    className: '',
+    html: '<div class="outer-circle"><div class="inner-circle"></div></div>',
+    iconSize: [30, 30]
+  })
+}).addTo(map);
+
                 marker.bindTooltip(p[3], {
   permanent: true,
   direction: 'top',
