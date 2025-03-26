@@ -68,7 +68,13 @@
             border-radius: 50%;
             background-color: #2563eb;
         }
-    </style>
+    
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+</style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
@@ -168,7 +174,11 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
                 document.getElementById('statusText').innerText = 'Загрузка...';
                 fetch('/add_point', { method: 'POST', body: formData })
                     .then(() => {
-  document.getElementById('statusText').innerText = '✅ Готово! Теперь можно нажать Обновить';
+  const status = document.getElementById('statusText');
+  status.innerText = '✅ Готово! Теперь можно нажать Обновить';
+  setTimeout(() => {
+    status.style.animation = 'fadeOut 1s forwards';
+  }, 5000);
   if (window.Telegram?.WebApp?.reload) {
     Telegram.WebApp.reload(); // для Telegram Mini App
   } else {
@@ -185,7 +195,7 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
     🔄 Обновить
   </button>
 
-  <div id="statusText" style="position: fixed; top: 220px; right: 20px; z-index: 1000; font-size: 25px; color: #111; font-weight: 500;">
+  <div id="statusText" style="position: fixed; top: 220px; right: 20px; z-index: 1000; font-size: 25px; color: #111; font-weight: 500; background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: opacity 1s;">
   </div>
 </body>
 
