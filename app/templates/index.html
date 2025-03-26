@@ -91,15 +91,18 @@
         ➕ Добавить точку
     </button>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js">
+
+
+
 navigator.geolocation.getCurrentPosition(function(position) {
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
 
-    const userMarker = L.circleMarker([userLat, userLon], {
-        radius: 10,
-        color: '#2563eb',
-        fillColor: '#2563eb',
-        fillOpacity: 0.8
+    const userMarker = L.marker([userLat, userLon], {
+        icon: L.divIcon({
+            className: 'user-location',
+            iconSize: [40, 40]
+        })
     }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
 
     map.setView([userLat, userLon], 15);
@@ -213,17 +216,19 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
             fileInput.click();
         });
     
+
+
+
 navigator.geolocation.getCurrentPosition(function(position) {
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
 
-    const userMarker = L.marker([lat, lon], {
-  icon: L.divIcon({
-    className: 'user-location',
-    iconSize: [30, 30]
-  })
-}).addTo(map).bindTooltip("Вы здесь", { permanent: true, direction: "top" });
-
+    const userMarker = L.marker([userLat, userLon], {
+        icon: L.divIcon({
+            className: 'user-location',
+            iconSize: [40, 40]
+        })
+    }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
 
     map.setView([userLat, userLon], 15);
 });
@@ -240,3 +245,4 @@ navigator.geolocation.getCurrentPosition(function(position) {
 
 
 </html>
+
