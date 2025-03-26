@@ -82,7 +82,22 @@
     <button id="addPointBtn" style="position: fixed; top: 20px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #2563eb; color: white; border: none; border-radius: 12px; cursor: pointer;">
         ➕ Добавить точку
     </button>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js">
+navigator.geolocation.getCurrentPosition(function(position) {
+    const userLat = position.coords.latitude;
+    const userLon = position.coords.longitude;
+
+    const userMarker = L.circleMarker([userLat, userLon], {
+        radius: 10,
+        color: '#2563eb',
+        fillColor: '#2563eb',
+        fillOpacity: 0.8
+    }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
+
+    map.setView([userLat, userLon], 15);
+});
+
+</script>
     <script>
         const map = L.map('map').setView([43.4847, 43.6071], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -189,7 +204,22 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
             };
             fileInput.click();
         });
-    </script>
+    
+navigator.geolocation.getCurrentPosition(function(position) {
+    const userLat = position.coords.latitude;
+    const userLon = position.coords.longitude;
+
+    const userMarker = L.circleMarker([userLat, userLon], {
+        radius: 10,
+        color: '#2563eb',
+        fillColor: '#2563eb',
+        fillOpacity: 0.8
+    }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
+
+    map.setView([userLat, userLon], 15);
+});
+
+</script>
 
   <button onclick="window.location.reload()" style="position: fixed; top: 120px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer;">
     🔄 Обновить
