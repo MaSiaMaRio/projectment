@@ -68,7 +68,15 @@
             border-radius: 50%;
             background-color: #2563eb;
         }
-    
+        .user-location {
+  background-color: #2563eb;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  border: 3px solid white;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -209,12 +217,13 @@ navigator.geolocation.getCurrentPosition(function(position) {
     const userLat = position.coords.latitude;
     const userLon = position.coords.longitude;
 
-    const userMarker = L.circleMarker([userLat, userLon], {
-        radius: 10,
-        color: '#2563eb',
-        fillColor: '#c41e3a',
-        fillOpacity: 0.8
-    }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
+    const userMarker = L.marker([lat, lon], {
+  icon: L.divIcon({
+    className: 'user-location',
+    iconSize: [30, 30]
+  })
+}).addTo(map).bindTooltip("Вы здесь", { permanent: true, direction: "top" });
+
 
     map.setView([userLat, userLon], 15);
 });
