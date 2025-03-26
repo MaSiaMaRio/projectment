@@ -165,8 +165,10 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
                 if (fileInput.files[0]) {
                     formData.append('image', fileInput.files[0]);
                 }
+                document.getElementById('statusText').innerText = 'Загрузка...';
                 fetch('/add_point', { method: 'POST', body: formData })
                     .then(() => {
+  document.getElementById('statusText').innerText = '✅ Готово! Теперь можно нажать Обновить';
   if (window.Telegram?.WebApp?.reload) {
     Telegram.WebApp.reload(); // для Telegram Mini App
   } else {
@@ -182,6 +184,10 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
   <button onclick="window.location.reload()" style="position: fixed; top: 120px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer;">
     🔄 Обновить
   </button>
+
+  <div id="statusText" style="position: fixed; top: 190px; right: 20px; z-index: 1000; font-size: 18px; color: #111; font-weight: 500;">
+  </div>
 </body>
+
 
 </html>
