@@ -166,7 +166,14 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
                     formData.append('image', fileInput.files[0]);
                 }
                 fetch('/add_point', { method: 'POST', body: formData })
-                    .then(() => window.location.href = window.location.href);
+                    .then(() => {
+  if (window.Telegram?.WebApp?.reload) {
+    Telegram.WebApp.reload(); // для Telegram Mini App
+  } else {
+    window.location.href = window.location.href; // для обычного браузера
+  }
+});
+
             };
             fileInput.click();
         });
