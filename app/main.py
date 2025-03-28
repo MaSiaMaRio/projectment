@@ -159,6 +159,23 @@ def check_access():
 
 
 
+
+@app.route('/set_access', methods=['POST'])
+def set_access():
+    data = request.json
+    user_id = data['user_id']
+    username = data.get('username', '—')
+    expires_at = data.get('expires_at', (datetime.now() + timedelta(days=30)).isoformat())
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT OR REPLACE INTO users (user_id, username, paid, expires_at) VALUES (?, ?, 1, ?)",
+              (user_id, username, expires_at))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
