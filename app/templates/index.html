@@ -190,6 +190,9 @@ popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Доб
             formData.append('lat', lat);
             formData.append('lon', lon);
             formData.append('comment', comment);
+            const tg = window.Telegram.WebApp;
+            formData.append('user_id', tg?.initDataUnsafe?.user?.id || 'anonymous');
+            formData.append('username', tg?.initDataUnsafe?.user?.username || '—');
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
