@@ -258,6 +258,14 @@ navigator.geolocation.getCurrentPosition(function(position) {
     }
 </script>
 
+
+<script>
+    const debugBox = document.createElement('div');
+    debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
+    debugBox.innerText = JSON.stringify(window.Telegram?.WebApp?.initDataUnsafe, null, 2);
+    document.body.prepend(debugBox);
+</script>
+
 </body>
 
 
