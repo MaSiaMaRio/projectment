@@ -129,9 +129,11 @@ def dislike_point(point_id):
     return jsonify({'status': 'disliked'})
 
 
+
 @app.route('/check_access')
 def check_access():
     user_id = request.args.get("user_id")
+    print(f"🔍 Проверка доступа для user_id: {user_id}")
     if not user_id:
         return jsonify({"access": False})
 
@@ -141,6 +143,7 @@ def check_access():
     row = c.fetchone()
     conn.close()
 
+    print(f"Результат из базы: {row}")
     if not row:
         return jsonify({"access": False})
 
@@ -152,6 +155,7 @@ def check_access():
         return jsonify({"access": False})
 
     return jsonify({"access": True})
+
 
 
 if __name__ == '__main__':
