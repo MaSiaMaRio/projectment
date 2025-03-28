@@ -56,7 +56,7 @@ def add_point():
         image_file.save(saved_path)
         image_path = f'/static/uploads/{filename}'
 
-  created_at = (datetime.now() + timedelta(hours=3)).isoformat()
+    created_at = (datetime.now() + timedelta(hours=3)).isoformat()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT INTO points (lat, lon, comment, image, created_at, user_id, username) VALUES (?, ?, ?, ?, ?, ?, ?)",
