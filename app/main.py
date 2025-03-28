@@ -4,6 +4,9 @@ from werkzeug.utils import secure_filename
 import sqlite3
 from datetime import datetime
 from uuid import uuid4
+from datetime import timedelta
+
+
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -53,7 +56,7 @@ def add_point():
         image_file.save(saved_path)
         image_path = f'/static/uploads/{filename}'
 
-    created_at = datetime.now().isoformat()
+  created_at = (datetime.now() + timedelta(hours=3)).isoformat()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("INSERT INTO points (lat, lon, comment, image, created_at, user_id, username) VALUES (?, ?, ?, ?, ?, ?, ?)",
