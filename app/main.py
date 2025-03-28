@@ -14,7 +14,8 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-DB_PATH = os.path.join(BASE_DIR, 'data.db')
+
+DB_PATH = "/app/data.db"
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
