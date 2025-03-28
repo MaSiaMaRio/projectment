@@ -19,6 +19,16 @@ DB_PATH = os.path.join(BASE_DIR, 'data.db')
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            user_id TEXT PRIMARY KEY,
+            username TEXT,
+            paid INTEGER DEFAULT 0,
+            expires_at TEXT
+        )
+    ''')
+
     c.execute('''
         CREATE TABLE IF NOT EXISTS points (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +127,32 @@ def dislike_point(point_id):
     conn.commit()
     conn.close()
     return jsonify({'status': 'disliked'})
+
+
+@app.route('/check_access')
+def check_access():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"access": False})
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT paid, expires_at FROM users WHERE user_id = ?", (user_id,))
+    row = c.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"access": False})
+
+    paid, expires_at = row
+    if not paid or not expires_at:
+        return jsonify({"access": False})
+
+    if datetime.fromisoformat(expires_at) < datetime.now():
+        return jsonify({"access": False})
+
+    return jsonify({"access": True})
+
 
 if __name__ == '__main__':
     init_db()
