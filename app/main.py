@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
 from werkzeug.utils import secure_filename
 import sqlite3
 from datetime import datetime
@@ -24,7 +24,9 @@ def init_db():
             image TEXT,
             likes INTEGER DEFAULT 0,
             dislikes INTEGER DEFAULT 0,
-            created_at TEXT
+            created_at TEXT,
+            user_id TEXT,
+            username TEXT
         )
     ''')
     conn.commit()
@@ -39,6 +41,8 @@ def add_point():
     lat = request.form['lat']
     lon = request.form['lon']
     comment = request.form['comment']
+    user_id = request.form.get('user_id', 'anonymous')
+    username = request.form.get('username', '—')
     image_file = request.files.get('image')
     image_path = ''
     if image_file:
@@ -49,8 +53,8 @@ def add_point():
     created_at = datetime.now().isoformat()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("INSERT INTO points (lat, lon, comment, image, created_at) VALUES (?, ?, ?, ?, ?)",
-              (lat, lon, comment, image_path, created_at))
+    c.execute("INSERT INTO points (lat, lon, comment, image, created_at, user_id, username) VALUES (?, ?, ?, ?, ?, ?, ?)",
+              (lat, lon, comment, image_path, created_at, user_id, username))
     conn.commit()
     conn.close()
     return jsonify({'status': 'success'})
@@ -63,6 +67,27 @@ def get_points():
     data = c.fetchall()
     conn.close()
     return jsonify(data)
+
+@app.route('/admin')
+def admin():
+    secret = request.args.get("secret")
+    if secret != "nalchik2025":
+        return "Access denied", 403
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT * FROM points ORDER BY created_at DESC")
+    points = c.fetchall()
+    conn.close()
+    return render_template("admin.html", points=points)
+
+@app.route('/delete_point/<int:point_id>', methods=['POST'])
+def delete_point(point_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("DELETE FROM points WHERE id = ?", (point_id,))
+    conn.commit()
+    conn.close()
+    return redirect("/admin?secret=nalchik2025")
 
 @app.route('/like_point/<int:point_id>', methods=['POST'])
 def like_point(point_id):
