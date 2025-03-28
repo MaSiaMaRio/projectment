@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, render_template, redirect
 from werkzeug.utils import secure_filename
 import sqlite3
 from datetime import datetime
+from uuid import uuid4
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,10 +47,12 @@ def add_point():
     image_file = request.files.get('image')
     image_path = ''
     if image_file:
-        filename = secure_filename(image_file.filename)
+        ext = os.path.splitext(image_file.filename)[1]
+        filename = f"{uuid4().hex}{ext}"
         saved_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         image_file.save(saved_path)
         image_path = f'/static/uploads/{filename}'
+
     created_at = datetime.now().isoformat()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
