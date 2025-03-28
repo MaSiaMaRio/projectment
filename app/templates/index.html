@@ -241,6 +241,23 @@ navigator.geolocation.getCurrentPosition(function(position) {
 
   <div id="statusText" style="position: fixed; top: 220px; right: 20px; z-index: 1000; font-size: 25px; color: #111; font-weight: 500; background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: opacity 1s;">
   </div>
+
+<script>
+    const tg = window.Telegram?.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
+    if (userId) {
+        fetch(`/check_access?user_id=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.access) {
+                    document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
+                }
+            });
+    } else {
+        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
+    }
+</script>
+
 </body>
 
 
