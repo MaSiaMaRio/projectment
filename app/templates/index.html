@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-    <title>Карта Нальчика</title>
-    <meta charset="utf-8" />
-    <style>
+<title>Карта Нальчика</title>
+<meta charset="utf-8"/>
+<style>
         #map { height: 100vh; width: 100%; }
         .marker-icon {
             background-color: #2563eb;
@@ -83,14 +84,14 @@
 }
 
 </style>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-</head>
+<link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://telegram.org/js/telegram-web-app.js"></script></head>
 <body>
-    <div id="map"></div>
-    <button id="addPointBtn" style="position: fixed; top: 20px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #2563eb; color: white; border: none; border-radius: 12px; cursor: pointer;">
+<div id="map"></div>
+<button id="addPointBtn" style="position: fixed; top: 20px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #2563eb; color: white; border: none; border-radius: 12px; cursor: pointer;">
         ➕ Добавить точку
     </button>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js">
 
 
 
@@ -109,136 +110,175 @@ navigator.geolocation.getCurrentPosition(function(position) {
 });
 
 </script>
-    <script>
-    function parseTelegramInitData() {
-        const tg = window.Telegram?.WebApp;
-        const initDataStr = tg?.initData || "";
-        const params = new URLSearchParams(initDataStr);
-        const userRaw = params.get("user");
-        if (userRaw) {
-            try {
-                const userObj = JSON.parse(userRaw);
-                return userObj.id;
-            } catch (e) {
-                return null;
-            }
-        }
-        return null;
-    }
+<script>
+        const map = L.map('map').setView([43.4847, 43.6071], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-    setTimeout(() => {
-        const tg = window.Telegram?.WebApp;
-        const userId = tg?.initDataUnsafe?.user?.id || parseTelegramInitData();
-        if (userId) {
-            fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.access) {
-                        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
-                    }
+        fetch('/get_points').then(res => res.json()).then(data => {
+            data.forEach(p => {
+                const marker = L.marker([p[1], p[2]], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: '<div class="outer-circle"><div class="inner-circle"></div></div>',
+                        iconSize: [50, 50]
+                    })
+                }).addTo(map);
+
+                marker.bindTooltip(p[3], {
+                    permanent: true,
+                    direction: 'top',
+                    className: `custom-tooltip-${p[0]}`
                 });
-        } else {
-            document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
+
+                let popupContent = `<b>${p[3]}</b><br/>Likes: ${p[5]} Dislikes: ${p[6]}<br/>`;
+                if (p[4]) popupContent += `<img src="${p[4]}" width="250" /><br/>`;
+popupContent += `<div style='font-size:20px; color:#666; margin-top:4px;'>Добавлено: ${new Date(p[7]).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+}</div>`;
+                popupContent += `
+                    <div style="text-align:center; margin-top:10px;">
+                        <button onclick="like(${p[0]})" class="popup-btn">👍</button>
+                        <button onclick="dislike(${p[0]})" class="popup-btn">👎</button>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+
+                setTimeout(() => {
+                    const el = document.querySelector(`.custom-tooltip-${p[0]}`);
+                    if (el) {
+                        el.style.cursor = "pointer";
+                        el.addEventListener("click", () => {
+                            marker.openPopup();
+                        });
+                    }
+                }, 0);
+            });
+        });
+
+        function like(id) {
+            fetch('/like_point/' + id, { method: 'POST' }).then(() => location.reload());
         }
 
-        const debugBox = document.createElement('div');
-        debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
-        debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "
-user.id: " + userId;
-        document.body.prepend(debugBox);
-    }, 100);
-</script>
+        function dislike(id) {
+            fetch('/dislike_point/' + id, { method: 'POST' }).then(() => location.reload());
+        }
 
-  <button onclick="window.location.reload()" style="position: fixed; top: 120px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer;">
+        map.on("zoom", () => {
+            const zoom = map.getZoom();
+            const scale = 0.8 + (zoom - 13) * 0.8;
+            document.querySelectorAll(".marker-icon").forEach(el => {
+                el.style.transform = `scale(${scale})`;
+            });
+        });
+
+        // Добавление по кнопке
+        let addingMode = false;
+        const btn = document.getElementById("addPointBtn");
+        btn.addEventListener("click", () => {
+            addingMode = !addingMode;
+            btn.textContent = addingMode ? "❌ Отменить" : "➕ Добавить точку";
+            btn.style.backgroundColor = addingMode ? "#ef4444" : "#2563eb";
+        });
+
+        map.on('click', function(e) {
+            if (!addingMode) return;
+            const comment = prompt('Комментарий к точке:');
+            if (!comment) return;
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            const formData = new FormData();
+            formData.append('lat', lat);
+            formData.append('lon', lon);
+            formData.append('comment', comment);
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = () => {
+                if (fileInput.files[0]) {
+                    formData.append('image', fileInput.files[0]);
+                }
+                document.getElementById('statusText').innerText = 'Загрузка...';
+                fetch('/add_point', { method: 'POST', body: formData })
+                    .then(() => {
+  const status = document.getElementById('statusText');
+  status.innerText = '✅ Готово! Теперь можно нажать Обновить';
+  setTimeout(() => {
+    status.style.animation = 'fadeOut 1s forwards';
+  }, 5000);
+  if (window.Telegram?.WebApp?.reload) {
+    Telegram.WebApp.reload(); // для Telegram Mini App
+  } else {
+    window.location.href = window.location.href; // для обычного браузера
+  }
+});
+
+            };
+            fileInput.click();
+        });
+    
+
+
+
+navigator.geolocation.getCurrentPosition(function(position) {
+    const userLat = position.coords.latitude;
+    const userLon = position.coords.longitude;
+
+    const userMarker = L.marker([userLat, userLon], {
+        icon: L.divIcon({
+            className: 'user-location',
+            iconSize: [40, 40]
+        })
+    }).addTo(map).bindTooltip("Вы здесь", {permanent: true, direction: "top"});
+
+    map.setView([userLat, userLon], 15);
+});
+
+</script>
+<button onclick="window.location.reload()" style="position: fixed; top: 120px; right: 20px; z-index: 1000; padding: 16px 24px; font-size: 40px; background-color: #10b981; color: white; border: none; border-radius: 12px; cursor: pointer;">
     🔄 Обновить
   </button>
-
-  <div id="statusText" style="position: fixed; top: 220px; right: 20px; z-index: 1000; font-size: 25px; color: #111; font-weight: 500; background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: opacity 1s;">
-  </div>
-
-<script>
-    function parseTelegramInitData() {
-        const tg = window.Telegram?.WebApp;
-        const initDataStr = tg?.initData || "";
-        const params = new URLSearchParams(initDataStr);
-        const userRaw = params.get("user");
-        if (userRaw) {
-            try {
-                const userObj = JSON.parse(userRaw);
-                return userObj.id;
-            } catch (e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    setTimeout(() => {
-        const tg = window.Telegram?.WebApp;
-        const userId = tg?.initDataUnsafe?.user?.id || parseTelegramInitData();
-        if (userId) {
-            fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.access) {
-                        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
-                    }
-                });
-        } else {
-            document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
-        }
-
-        const debugBox = document.createElement('div');
-        debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
-        debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "
-user.id: " + userId;
-        document.body.prepend(debugBox);
-    }, 100);
-</script>
+<div id="statusText" style="position: fixed; top: 220px; right: 20px; z-index: 1000; font-size: 25px; color: #111; font-weight: 500; background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: opacity 1s;">
+</div>
 
 
 <script>
-    function parseTelegramInitData() {
-        const tg = window.Telegram?.WebApp;
-        const initDataStr = tg?.initData || "";
-        const params = new URLSearchParams(initDataStr);
-        const userRaw = params.get("user");
-        if (userRaw) {
-            try {
-                const userObj = JSON.parse(userRaw);
-                return userObj.id;
-            } catch (e) {
-                return null;
-            }
+const tg = window.Telegram?.WebApp;
+tg?.ready?.();
+
+function parseTelegramInitData() {
+    const initDataStr = tg?.initData || "";
+    const params = new URLSearchParams(initDataStr);
+    const userRaw = params.get("user");
+    if (userRaw) {
+        try {
+            const userObj = JSON.parse(userRaw);
+            return userObj.id;
+        } catch (e) {
+            return null;
         }
-        return null;
+    }
+    return null;
+}
+
+setTimeout(() => {
+    const userId = tg?.initDataUnsafe?.user?.id || parseTelegramInitData();
+    if (userId) {
+        fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.access) {
+                    document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
+                }
+            });
+    } else {
+        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
     }
 
-    setTimeout(() => {
-        const tg = window.Telegram?.WebApp;
-        const userId = tg?.initDataUnsafe?.user?.id || parseTelegramInitData();
-        if (userId) {
-            fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.access) {
-                        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
-                    }
-                });
-        } else {
-            document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
-        }
-
-        const debugBox = document.createElement('div');
-        debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
-        debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "
-user.id: " + userId;
-        document.body.prepend(debugBox);
-    }, 100);
-</script>
-
-</body>
-
-
+    const debugBox = document.createElement('div');
+    debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
+    debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "\nuser.id: " + userId;
+    document.body.prepend(debugBox);
+}, 100);
+</script></body>
 </html>
-
