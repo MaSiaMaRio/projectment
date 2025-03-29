@@ -176,6 +176,31 @@ def set_access():
     return jsonify({"status": "ok"})
 
 
+
+@app.route("/validate_init_data", methods=["POST"])
+def validate_init_data():
+    import hmac
+    import hashlib
+    import urllib.parse
+
+    init_data = request.json.get("init_data")
+    if not init_data:
+        return jsonify({"valid": False}), 400
+
+    bot_token = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN")
+    secret = hashlib.sha256(bot_token.encode()).digest()
+
+    parsed = urllib.parse.parse_qs(init_data, keep_blank_values=True)
+    data_check_string = "\n".join(
+        f"{k}={v[0]}" for k, v in sorted(parsed.items()) if k != "hash"
+    )
+    received_hash = parsed.get("hash", [""])[0]
+
+    computed_hash = hmac.new(secret, data_check_string.encode(), hashlib.sha256).hexdigest()
+
+    return jsonify({"valid": computed_hash == received_hash})
+
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
