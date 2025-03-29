@@ -243,19 +243,26 @@ navigator.geolocation.getCurrentPosition(function(position) {
   </div>
 
 <script>
-    const tg = window.Telegram?.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
-    if (userId) {
-        fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.access) {
-                    document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
-                }
-            });
-    } else {
-        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
-    }
+    setTimeout(() => {
+        const tg = window.Telegram?.WebApp;
+        const userId = tg?.initDataUnsafe?.user?.id;
+        if (userId) {
+            fetch(`https://nalchik-map-production.up.railway.app/check_access?user_id=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.access) {
+                        document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>🔒 <b>Доступ закрыт</b><br><br>Подпишитесь через Telegram-бота, чтобы получить доступ к карте.</div>";
+                    }
+                });
+        } else {
+            document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
+        }
+
+        const debugBox = document.createElement('div');
+        debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
+        debugBox.innerText = JSON.stringify(tg?.initDataUnsafe, null, 2);
+        document.body.prepend(debugBox);
+    }, 100);
 </script>
 
 
