@@ -275,10 +275,10 @@ setTimeout(() => {
         document.body.innerHTML = "<div style='padding:40px; font-size:28px; text-align:center;'>⚠️ Не удалось определить пользователя Telegram.<br>Откройте карту из Telegram Mini App.</div>";
     }
 
-    const debugBox = document.createElement('div');
-    debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
-    debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "\nuser.id: " + userId;
-    document.body.prepend(debugBox);
-}, 100);
+    //const debugBox = document.createElement('div');
+    //debugBox.style = "position:fixed; top:0; left:0; width:100%; max-height:60vh; overflow:auto; background:white; color:black; z-index:9999; font-size:14px; padding:20px;";
+    //debugBox.innerText = "tg.initData: " + (tg?.initData || "нет") + "\nuser.id: " + userId;
+    //document.body.prepend(debugBox);
+//}, 100);
 </script></body>
 </html>
