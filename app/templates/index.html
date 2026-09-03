@@ -261,7 +261,7 @@ function parseTelegramInitData() {
 
 setTimeout(() => {
     const initData = tg?.initData || "";
-    fetch("https://nalchik-map-production.up.railway.app/validate_init_data", {
+    fetch("https://nalchik-map-production-c21f.up.railway.app/validate_init_data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ init_data: initData })
